@@ -1,7 +1,7 @@
 import { AppProps } from 'next/app'
-import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '../contexts/AuthContext'
 import { useEffect } from 'react'
+import { Toaster } from '@/components/ui/sonner'
 import '../styles/globals.css'
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -12,7 +12,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
       <Component {...pageProps} />
-      <Toaster position="top-right" />
+      <Toaster />
     </AuthProvider>
   )
 }
