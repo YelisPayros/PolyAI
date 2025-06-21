@@ -23,11 +23,11 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
   const [attachments, setAttachments] = useState<Array<Attachment>>([])
 
   return (
-    <div className="flex flex-row justify-center pb-4 md:pb-8 h-dvh bg-background h-screen">
+    <div className="flex flex-row justify-center pb-4 md:pb-8 h-dvh bg-background h-full">
       <div className="flex flex-col justify-between items-center gap-4">
         <div
           ref={messagesContainerRef}
-          className="flex flex-col gap-4 h-full w-screen items-center overflow-y-scroll"
+          className="flex flex-col gap-4 h-full w-screen items-center overflow-y-scroll scrollbar-none"
         >
           {messages.length === 0 && <Overview />}
 
