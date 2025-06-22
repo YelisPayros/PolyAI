@@ -1,7 +1,7 @@
 'use client'
 
 import { Attachment, ToolInvocation } from 'ai'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { ReactNode } from 'react'
 import { BotIcon, UserIcon } from './icons'
 import { PreviewAttachment } from './preview-attachment'

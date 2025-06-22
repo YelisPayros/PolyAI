@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
@@ -20,8 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Check active sessions and sets the user
     const getSession = async () => {
       const {
-        data: { session },
-        error
+        data: { session }
       } = await supabase.auth.getSession()
       setUser(session?.user ?? null)
       setLoading(false)

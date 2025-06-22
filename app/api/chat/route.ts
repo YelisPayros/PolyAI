@@ -1,13 +1,25 @@
-import { convertToCoreMessages, Message, streamText } from 'ai'
-import { o4mini } from '@/lib/ai'
-import { generateUUID } from '@/lib/utils'
+import {
+  convertToCoreMessages,
+  streamText,
+  appendResponseMessages,
+  createIdGenerator,
+  appendClientMessage
+} from 'ai'
+import { groqWrapper } from '@/lib/ai'
+import { loadChat, saveChat } from '@/lib/chat-store'
 
 export async function POST(request: Request) {
-  const { messages }: { id: string; messages: Array<Message> } = await request.json()
+  const { message, id } = await request.json()
+
+  const previousMessages = await loadChat(id)
+  const messages = appendClientMessage({
+    messages: previousMessages,
+    message
+  })
   const coreMessages = convertToCoreMessages(messages).filter(message => message.content.length > 0)
 
   const result = await streamText({
-    model: o4mini,
+    model: groqWrapper,
     system: `\n
         - Your Name is PolyAI!
         - You are a helpful AI assistant. You aim to be helpful and knowledgeable.
@@ -27,7 +39,20 @@ export async function POST(request: Request) {
     onError({ error }) {
       console.error(error) // your error logging logic here
     },
-    messages: coreMessages
+    messages: coreMessages,
+    experimental_generateMessageId: createIdGenerator({
+      prefix: 'msgs',
+      size: 16
+    }),
+    async onFinish({ response }) {
+      await saveChat({
+        id,
+        messages: appendResponseMessages({
+          messages,
+          responseMessages: response.messages
+        })
+      })
+    }
   })
 
   return result.toDataStreamResponse({})

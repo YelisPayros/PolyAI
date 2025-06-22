@@ -1,12 +1,14 @@
+'use client'
+
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useState } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
@@ -29,7 +31,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       await signUp(email, password)
       toast.success('Registration successful! Please check your email for verification.')
       router.push('/login')
-    } catch (error) {
+    } catch {
       toast.error('Failed to create account.')
     } finally {
       setLoading(false)

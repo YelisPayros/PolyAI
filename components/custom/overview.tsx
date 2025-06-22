@@ -1,7 +1,4 @@
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-
-import { LogoGoogle, MessageIcon, VercelIcon } from './icons'
+import { motion } from 'motion/react'
 
 export const Overview = () => {
   return (

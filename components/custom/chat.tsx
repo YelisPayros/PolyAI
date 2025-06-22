@@ -1,12 +1,10 @@
 'use client'
 
-import { Attachment, Message } from 'ai'
+import { Attachment, Message, createIdGenerator } from 'ai'
 import { useChat } from '@ai-sdk/react'
 import { useState } from 'react'
-
 import { Message as PreviewMessage } from './message'
 import { useScrollToBottom } from './use-scroll-to-bottom'
-
 import { Overview } from './overview'
 import { MultimodalInput } from './multimodal-input'
 
@@ -15,7 +13,14 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
     id,
     body: { id },
     initialMessages,
-    maxSteps: 10
+    maxSteps: 10,
+    generateId: createIdGenerator({
+      prefix: 'msgc',
+      size: 16
+    }),
+    experimental_prepareRequestBody({ messages, id }) {
+      return { message: messages[messages.length - 1], id }
+    }
   })
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>()
@@ -23,7 +28,7 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
   const [attachments, setAttachments] = useState<Array<Attachment>>([])
 
   return (
-    <div className="flex flex-row justify-center pb-4 md:pb-8 h-dvh bg-background h-full">
+    <div className="flex flex-row justify-center pb-4 md:pb-8 bg-background h-full">
       <div className="flex flex-col justify-between items-center gap-4">
         <div
           ref={messagesContainerRef}
