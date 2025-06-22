@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { GoogleIcon } from './custom/icons'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'form'>) {
   const [email, setEmail] = useState('')
@@ -75,6 +76,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           </span>
         </div>
         <Button variant="outline" className="w-full">
+          <GoogleIcon />
           Login with Google
         </Button>
       </div>

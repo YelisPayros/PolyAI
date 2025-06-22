@@ -1,5 +1,6 @@
 import { generateId, Message } from 'ai'
 import { createClient } from './supabase/server'
+import { redirect } from 'next/navigation'
 
 // Save chat messages to Supabase
 export async function saveChat({
@@ -60,11 +61,10 @@ export async function loadChat(id: string): Promise<Message[]> {
 
   if (error) {
     console.error('Error loading chat messages:', error)
-    throw error
   }
 
   if (!data) {
-    throw new Error('Chat not found')
+    redirect('/')
   }
 
   return data.messages as Message[]
@@ -115,4 +115,31 @@ export async function createChat(): Promise<string> {
   }
 
   return id
+}
+
+// Delete a chat from Supabase
+export async function deleteChat(id: string): Promise<void> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    console.error('Auth error:', authError)
+    throw new Error('User not authenticated')
+  }
+
+  const user_uuid = user.id
+
+  const { error } = await supabase
+    .from('chats')
+    .delete()
+    .eq('chat_id', id)
+    .eq('user_uuid', user_uuid)
+
+  if (error) {
+    console.error('Error deleting chat from database:', error)
+    throw error
+  }
 }
