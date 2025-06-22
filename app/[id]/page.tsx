@@ -1,4 +1,3 @@
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Chat } from '@/components/custom/chat'
 import { loadChat } from '@/lib/chat-store'
 import { ActionBar } from '@/components/action-bar'
@@ -8,11 +7,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const messages = await loadChat(id)
 
   return (
-    <ProtectedRoute>
-      <div className="h-screen flex flex-col ">
-        <ActionBar />
-        <Chat key={id} id={id} initialMessages={messages} />
-      </div>
-    </ProtectedRoute>
+    <div className="h-screen flex flex-col ">
+      <ActionBar />
+      <Chat key={id} id={id} initialMessages={messages} />
+    </div>
   )
 }

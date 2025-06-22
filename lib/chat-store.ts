@@ -1,8 +1,7 @@
 import { generateId, Message } from 'ai'
-import { existsSync, mkdirSync } from 'fs'
-import { writeFile, readFile } from 'fs/promises'
-import path from 'path'
+import { createClient } from './supabase/server'
 
+// Save chat messages to Supabase
 export async function saveChat({
   id,
   messages
@@ -10,24 +9,110 @@ export async function saveChat({
   id: string
   messages: Message[]
 }): Promise<void> {
-  const content = JSON.stringify(messages, null, 2)
-  await writeFile(getChatFile(id), content)
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    console.error('Auth error:', authError)
+    throw new Error('User not authenticated')
+  }
+
+  const user_uuid = user.id
+
+  // Update the messages in the database for the given chat_id
+  const { error } = await supabase
+    .from('chats')
+    .update({ messages })
+    .eq('chat_id', id)
+    .eq('user_uuid', user_uuid) // Ensure the chat belongs to the user
+
+  if (error) {
+    console.error('Error saving chat messages:', error)
+    throw error
+  }
 }
 
-// ... rest of the file
-
+// Load chat messages from Supabase
 export async function loadChat(id: string): Promise<Message[]> {
-  return JSON.parse(await readFile(getChatFile(id), 'utf8'))
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    console.error('Auth error:', authError)
+    throw new Error('User not authenticated')
+  }
+
+  const user_uuid = user.id
+
+  // Fetch the chat messages from the database
+  const { data, error } = await supabase
+    .from('chats')
+    .select('messages')
+    .eq('chat_id', id)
+    .eq('user_uuid', user_uuid) // Ensure the chat belongs to the user
+    .single()
+
+  if (error) {
+    console.error('Error loading chat messages:', error)
+    throw error
+  }
+
+  if (!data) {
+    throw new Error('Chat not found')
+  }
+
+  return data.messages as Message[]
 }
 
+// Create a new chat or retrieve existing chat ID
 export async function createChat(): Promise<string> {
-  const id = generateId() // generate a unique chat ID
-  await writeFile(getChatFile(id), '[]') // create an empty chat file
-  return id
-}
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError
+  } = await supabase.auth.getUser()
 
-function getChatFile(id: string): string {
-  const chatDir = path.join(process.cwd(), '.chats')
-  if (!existsSync(chatDir)) mkdirSync(chatDir, { recursive: true })
-  return path.join(chatDir, `${id}.json`)
+  if (authError || !user) {
+    console.error('Auth error:', authError)
+    throw new Error('User not authenticated')
+  }
+
+  const user_uuid = user.id
+
+  // Check if the user already has a chat
+  const { data, error } = await supabase
+    .from('chats')
+    .select('chat_id')
+    .eq('user_uuid', user_uuid)
+    .single()
+
+  if (error && error.code !== 'PGRST116') {
+    // PGRST116 means no rows found
+    console.error('Error checking for existing chat:', error)
+    throw error
+  }
+
+  let id: string
+  if (data) {
+    id = data.chat_id // Use existing chat ID
+  } else {
+    id = generateId() // Generate a new chat ID
+    // Insert the new chat into the database with empty messages
+    const { error: insertError } = await supabase
+      .from('chats')
+      .insert({ chat_id: id, user_uuid, messages: [] })
+
+    if (insertError) {
+      console.error('Error inserting new chat:', insertError)
+      throw insertError
+    }
+  }
+
+  return id
 }

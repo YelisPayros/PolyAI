@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "db-start": "npx supabase start",
-    "db-stop": "npx supabase stop"
+    "db-stop": "npx supabase stop",
+    "db-migrate": "npx supabase migration up",
+    "db-reset": "npx supabase db reset"
   },
   "dependencies": {
     "@ai-sdk/groq": "1.2.9",
