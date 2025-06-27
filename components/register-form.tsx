@@ -1,13 +1,16 @@
+'use client'
+
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useState } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { GoogleIcon } from './custom/icons'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('')
@@ -29,7 +32,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       await signUp(email, password)
       toast.success('Registration successful! Please check your email for verification.')
       router.push('/login')
-    } catch (error) {
+    } catch {
       toast.error('Failed to create account.')
     } finally {
       setLoading(false)
@@ -48,13 +51,12 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
                 <Button variant="outline" className="w-full">
+                  <GoogleIcon />
                   Sign Up with Google
                 </Button>
               </div>
               <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                  Or sign up
-                </span>
+                <span className="relative z-10 bg-card px-2 text-muted-foreground">Or sign up</span>
               </div>
               <div className="grid gap-6">
                 <div className="grid gap-2">

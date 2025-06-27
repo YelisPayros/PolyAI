@@ -1,12 +1,15 @@
+'use client'
+
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useState } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { GoogleIcon } from './custom/icons'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'form'>) {
   const [email, setEmail] = useState('')
@@ -22,7 +25,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       await signIn(email, password)
       router.push('/')
       toast.success('Logged in successfully!')
-    } catch (error) {
+    } catch {
       toast.error('Failed to log in. Please check your credentials.')
     } finally {
       setLoading(false)
@@ -73,6 +76,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           </span>
         </div>
         <Button variant="outline" className="w-full">
+          <GoogleIcon />
           Login with Google
         </Button>
       </div>

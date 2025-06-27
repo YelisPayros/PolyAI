@@ -1,7 +1,7 @@
 'use client'
 
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import React, {
   useRef,
   useEffect,
@@ -126,7 +126,7 @@ export function MultimodalInput({
         const { error } = await response.json()
         toast.error(error)
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to upload file, please try again!')
     }
   }

@@ -1,7 +1,7 @@
 'use client'
 
 import { Attachment, ToolInvocation } from 'ai'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { ReactNode } from 'react'
 import { BotIcon, UserIcon } from './icons'
 import { PreviewAttachment } from './preview-attachment'
@@ -25,8 +25,13 @@ export const Message = ({
       className={`flex flex-row gap-4 px-4 w-full md:w-[500px] md:px-0 first-of-type:pt-20`}
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
+      whileInView={{ y: 0, opacity: 1 }}
     >
-      <div className="size-[24px] border rounded-sm self-start p-1 flex flex-col justify-center items-center shrink-0 text-zinc-500">
+      <div
+        className={`size-[24px] border rounded-sm self-start p-1 flex flex-col justify-center items-center shrink-0 text-zinc-500 ${
+          role === 'assistant' ? 'bg-white text-zinc-700' : ''
+        }`}
+      >
         {role === 'assistant' ? <BotIcon /> : <UserIcon />}
       </div>
 
