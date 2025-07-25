@@ -9,9 +9,14 @@ import { listChatsClient, deleteChatClient, createChatClient } from '@/lib/chat-
 interface Chat {
   chat_id: string
   messages_count: number
+  created_at: string
 }
 
-export default function SidebarClient({ initialChats = [] }: { initialChats?: Chat[] }) {
+interface SidebarClientProps {
+  initialChats?: Chat[]
+}
+
+export default function SidebarClient({ initialChats = [] }: SidebarClientProps) {
   const [chats, setChats] = useState<Chat[]>(initialChats)
   const [canCreateChat, setCanCreateChat] = useState(true)
   const supabase = createClient()
@@ -21,14 +26,13 @@ export default function SidebarClient({ initialChats = [] }: { initialChats?: Ch
     try {
       console.log('Fetching chats in SidebarClient:', new Date().toISOString())
       const data = await listChatsClient()
-
-      // Ordenar los chats por ID descendente (los nuevos arriba)
-      const sortedChats = [...data].sort((a, b) => b.chat_id.localeCompare(a.chat_id))
-
-      setChats(sortedChats)
-
-      const hasEmptyChat = data.some(chat => chat.messages_count === 0)
-      setCanCreateChat(!hasEmptyChat)
+      console.log('Fetched chats:', JSON.stringify(data, null, 2))
+      setChats(data) // Confiar en la ordenación del servidor por created_at
+      const latestChat = data.length > 0 ? data[0] : null
+      const canCreate = latestChat ? latestChat.messages_count > 0 : true
+      setCanCreateChat(canCreate)
+      console.log('Updated chats state:', JSON.stringify(data, null, 2))
+      console.log('canCreateChat set to:', canCreate, 'latestChat:', JSON.stringify(latestChat, null, 2))
     } catch (error) {
       console.error('Error fetching chats:', JSON.stringify(error, null, 2))
     }
@@ -38,79 +42,81 @@ export default function SidebarClient({ initialChats = [] }: { initialChats?: Ch
     let active = true
     let channel: any = null
 
+    // Cargar chats iniciales
     fetchChats()
 
-    const setupSubscription = (user_uuid: string) => {
+    // Configurar suscripción
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      if (error || !user) {
+        console.log('No user found for subscription:', error ? JSON.stringify(error, null, 2) : 'No user')
+        return
+      }
+      const user_uuid = user.id
+      console.log('Setting up subscription for user:', user_uuid)
+
+      if (channel) {
+        console.log('Removing existing Supabase channel before new subscription')
+        supabase.removeChannel(channel).then(() => {
+          console.log('Previous channel removed')
+        })
+      }
+
       channel = supabase
-        .channel('chats-channel')
-        .on('postgres_changes', {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'chats',
-          filter: `user_uuid=eq.${user_uuid}`
-        }, (payload) => {
-          if (active) fetchChats()
-        })
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chats',
-          filter: `user_uuid=eq.${user_uuid}`
-        }, (payload) => {
-          if (active) fetchChats()
-        })
-        .on('postgres_changes', {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'chats'
-        }, (payload) => {
-          if (active) fetchChats()
-        })
+        .channel(`chats-channel-${user_uuid}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'chats',
+            filter: `user_uuid=eq.${user_uuid}`
+          },
+          (payload) => {
+            console.log('Supabase event received:', JSON.stringify(payload, null, 2), new Date().toISOString())
+            if (active) {
+              console.log('Fetching chats after event:', payload.eventType)
+              fetchChats()
+            }
+          }
+        )
         .subscribe((status: string, err: any) => {
+          console.log('Subscription status:', status, new Date().toISOString())
           if (err) {
             console.error('Subscription error:', JSON.stringify(err, null, 2))
           }
+          if (status === 'SUBSCRIBED') {
+            console.log('Successfully subscribed to chats-channel:', `chats-channel-${user_uuid}`)
+          }
         })
-    }
-
-    supabase.auth.getUser().then(({ data: { user }, error }) => {
-      if (error || !user) return
-      setupSubscription(user.id)
     })
 
     return () => {
       active = false
-      if (channel) supabase.removeChannel(channel)
+      if (channel) {
+        console.log('Removing Supabase channel on cleanup')
+        supabase.removeChannel(channel).then(() => {
+          console.log('Channel removed on cleanup')
+        })
+      }
     }
-  }, [supabase])
-
-  async function handleDelete(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const id = formData.get('chat_id') as string
-    try {
-      await deleteChatClient(id)
-      await fetchChats()
-    } catch (error) {
-      console.error('Error deleting chat:', JSON.stringify(error, null, 2))
-    }
-  }
-
-  async function handleCreateChat() {
-    try {
-      const id = await createChatClient()
-      await fetchChats()
-      router.push(`/${id}`)
-    } catch (error) {
-      console.error('Error creating chat:', JSON.stringify(error, null, 2))
-    }
-  }
+  }, [supabase, router])
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-gray-100 dark:bg-gray-900 p-4 shadow z-20">
       <h2 className="mb-4 font-bold text-lg text-gray-800 dark:text-gray-100">Tus chats</h2>
       <button
-        onClick={handleCreateChat}
+        onClick={async () => {
+          try {
+            console.log('Creating new chat')
+            const id = await createChatClient()
+            console.log('New chat created:', id)
+            console.log('Manually fetching chats after create')
+            await fetchChats()
+            router.push(`/${id}`)
+          } catch (error) {
+            console.error('Error creating chat:', JSON.stringify(error, null, 2))
+          }
+        }}
         disabled={!canCreateChat}
         className={`mb-4 px-4 py-2 rounded text-white ${
           canCreateChat ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
@@ -131,7 +137,22 @@ export default function SidebarClient({ initialChats = [] }: { initialChats?: Ch
               {chat.chat_id.slice(0, 8)}
             </Link>
             {chat.messages_count > 0 && (
-              <form onSubmit={handleDelete}>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault()
+                  const formData = new FormData(e.currentTarget)
+                  const id = formData.get('chat_id') as string
+                  try {
+                    console.log('Deleting chat:', id)
+                    await deleteChatClient(id)
+                    console.log('Chat deleted successfully:', id)
+                    console.log('Manually fetching chats after delete')
+                    await fetchChats()
+                  } catch (error) {
+                    console.error('Error deleting chat:', JSON.stringify(error, null, 2))
+                  }
+                }}
+              >
                 <input type="hidden" name="chat_id" value={chat.chat_id} />
                 <button
                   type="submit"
