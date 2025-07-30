@@ -1,5 +1,6 @@
 import { Attachment } from 'ai'
-import { LoaderIcon } from './icons'
+import { LoaderIcon, DocumentIcon } from './icons'
+import { Badge } from '../ui/badge'
 
 export const PreviewAttachment = ({
   attachment,
@@ -9,12 +10,16 @@ export const PreviewAttachment = ({
   isUploading?: boolean
 }) => {
   const { name, url, contentType } = attachment
-
+  const isImage = contentType?.startsWith('image')
   return (
-    <div className="flex flex-col gap-2 max-w-16">
-      <div className="h-20 w-16 bg-muted rounded-md relative flex flex-col items-center justify-center">
+    <div className={`flex flex-col gap-2 ${isImage ? 'max-w-16' : ''}`}>
+      <div
+        className={`${
+          isImage ? 'h-20 w-16 bg-muted' : null
+        } rounded-md relative flex flex-col items-center justify-center`}
+      >
         {contentType ? (
-          contentType.startsWith('image') ? (
+          isImage ? (
             // NOTE: it is recommended to use next/image for images
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -24,7 +29,10 @@ export const PreviewAttachment = ({
               className="rounded-md size-full object-cover"
             />
           ) : (
-            <div className=""></div>
+            <Badge variant="secondary" className="bg-zinc-500 text-zinc-300 dark:bg-zinc-600">
+              <DocumentIcon />
+              {name}
+            </Badge>
           )
         ) : (
           <div className=""></div>
@@ -37,7 +45,7 @@ export const PreviewAttachment = ({
         )}
       </div>
 
-      <div className="text-xs text-zinc-500 max-w-16 truncate">{name}</div>
+      {isImage ? <div className="text-xs text-zinc-500 max-w-16 truncate">{name}</div> : null}
     </div>
   )
 }

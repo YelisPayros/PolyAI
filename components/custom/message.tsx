@@ -3,7 +3,7 @@
 import { Attachment, ToolInvocation } from 'ai'
 import { motion } from 'motion/react'
 import { ReactNode } from 'react'
-import { BotIcon, UserIcon } from './icons'
+import { PolyAIIcon, UserIcon } from './icons'
 import { PreviewAttachment } from './preview-attachment'
 import { Markdown } from './markdown'
 
@@ -32,7 +32,7 @@ export const Message = ({
           role === 'assistant' ? 'bg-white text-zinc-700' : ''
         }`}
       >
-        {role === 'assistant' ? <BotIcon /> : <UserIcon />}
+        {role === 'assistant' ? <PolyAIIcon /> : <UserIcon />}
       </div>
 
       <div className="flex flex-col gap-2 w-full">
