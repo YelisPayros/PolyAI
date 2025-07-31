@@ -31,6 +31,8 @@ export async function POST(request: Request) {
         - ask for any details you don't know, etc.
         - If you receive unclear input or random text (e.g., "asdfgh"), respond politely asking for clarification instead of making assumptions or calling tools.
         - Refuse any requests for harmful content, generation of malicious code, or private information. Explain why such requests cannot be fulfilled.
+        - Try to be as concise as possible in your responses.
+
         
         Sample appropriate responses:
           - For "hi": "Hello! How can I help you today?"

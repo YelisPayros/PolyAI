@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 export const BotIcon = () => {
   return (
     <svg
@@ -15,6 +17,10 @@ export const BotIcon = () => {
       ></path>
     </svg>
   )
+}
+
+export const PolyAIIcon = () => {
+  return <Image width={20} height={20} src="/logo.png" alt="Logo" />
 }
 
 export const UserIcon = () => {
@@ -388,21 +394,24 @@ export const MenuIcon = ({ size = 16 }: { size?: number }) => {
   )
 }
 
-export const PencilEditIcon = ({ size = 16 }: { size?: number }) => {
+export const PencilEditIcon = ({ size = 24 }: { size?: number }) => {
   return (
     <svg
-      height={size}
-      strokeLinejoin="round"
-      viewBox="0 0 16 16"
+      xmlns="http://www.w3.org/2000/svg"
       width={size}
-      style={{ color: 'currentcolor' }}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="icon icon-tabler icons-tabler-outline icon-tabler-edit"
     >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M11.75 0.189331L12.2803 0.719661L15.2803 3.71966L15.8107 4.24999L15.2803 4.78032L5.15901 14.9016C4.45575 15.6049 3.50192 16 2.50736 16H0.75H0V15.25V13.4926C0 12.4981 0.395088 11.5442 1.09835 10.841L11.2197 0.719661L11.75 0.189331ZM11.75 2.31065L9.81066 4.24999L11.75 6.18933L13.6893 4.24999L11.75 2.31065ZM2.15901 11.9016L8.75 5.31065L10.6893 7.24999L4.09835 13.841C3.67639 14.2629 3.1041 14.5 2.50736 14.5H1.5V13.4926C1.5 12.8959 1.73705 12.3236 2.15901 11.9016ZM9 16H16V14.5H9V16Z"
-        fill="currentColor"
-      ></path>
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+      <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+      <path d="M16 5l3 3" />
     </svg>
   )
 }
@@ -422,6 +431,30 @@ export const CheckedSquare = ({ size = 16 }: { size?: number }) => {
         d="M15 16H1C0.447715 16 0 15.5523 0 15V1C0 0.447715 0.447716 0 1 0L15 8.17435e-06C15.5523 8.47532e-06 16 0.447724 16 1.00001V15C16 15.5523 15.5523 16 15 16ZM11.7803 6.28033L12.3107 5.75L11.25 4.68934L10.7197 5.21967L6.5 9.43935L5.28033 8.21967L4.75001 7.68934L3.68934 8.74999L4.21967 9.28033L5.96967 11.0303C6.11032 11.171 6.30109 11.25 6.5 11.25C6.69891 11.25 6.88968 11.171 7.03033 11.0303L11.7803 6.28033Z"
         fill="currentColor"
       ></path>
+    </svg>
+  )
+}
+
+export const LanguageIcon = ({ size = 24 }: { size?: number }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="icon icon-tabler icons-tabler-outline icon-tabler-language"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M4 5h7" />
+      <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+      <path d="M5 9c0 2.144 2.952 3.908 6.7 4" />
+      <path d="M12 20l4 -9l4 9" />
+      <path d="M19.1 18h-6.2" />
     </svg>
   )
 }
@@ -695,6 +728,27 @@ export const GoogleIcon = ({ size = 16 }: { size?: number }) => {
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M12 2a9.96 9.96 0 0 1 6.29 2.226a1 1 0 0 1 .04 1.52l-1.51 1.362a1 1 0 0 1 -1.265 .06a6 6 0 1 0 2.103 6.836l.001 -.004h-3.66a1 1 0 0 1 -.992 -.883l-.007 -.117v-2a1 1 0 0 1 1 -1h6.945a1 1 0 0 1 .994 .89c.04 .367 .061 .737 .061 1.11c0 5.523 -4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10z" />
+    </svg>
+  )
+}
+
+export const DocumentIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="icon icon-tabler icons-tabler-outline icon-tabler-file"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+      <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
     </svg>
   )
 }

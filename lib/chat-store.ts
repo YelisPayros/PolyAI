@@ -1,6 +1,7 @@
 import { generateId, Message } from 'ai'
 import { createClient } from './supabase/server'
 import { redirect } from 'next/navigation'
+import { Chat } from './utils'
 
 // Save chat messages to Supabase
 export async function saveChat({
@@ -84,34 +85,18 @@ export async function createChat(): Promise<string> {
   }
 
   const user_uuid = user.id
+  // First delete all empty chats for this user
+  await supabase.from('chats').delete().eq('user_uuid', user_uuid).eq('messages', '[]')
 
-  // Check if the user already has a chat
-  const { data, error } = await supabase
+  const id = generateId() // Generate a new chat ID
+  // Insert the new chat into the database with empty messages
+  const { error: insertError } = await supabase
     .from('chats')
-    .select('chat_id')
-    .eq('user_uuid', user_uuid)
-    .single()
+    .insert({ chat_id: id, user_uuid, messages: [] })
 
-  if (error && error.code !== 'PGRST116') {
-    // PGRST116 means no rows found
-    console.error('Error checking for existing chat:', error)
-    throw error
-  }
-
-  let id: string
-  if (data) {
-    id = data.chat_id // Use existing chat ID
-  } else {
-    id = generateId() // Generate a new chat ID
-    // Insert the new chat into the database with empty messages
-    const { error: insertError } = await supabase
-      .from('chats')
-      .insert({ chat_id: id, user_uuid, messages: [] })
-
-    if (insertError) {
-      console.error('Error inserting new chat:', insertError)
-      throw insertError
-    }
+  if (insertError) {
+    console.error('Error inserting new chat:', insertError)
+    throw insertError
   }
 
   return id
@@ -142,4 +127,24 @@ export async function deleteChat(id: string): Promise<void> {
     console.error('Error deleting chat from database:', error)
     throw error
   }
+}
+
+// Load all chats for a user from Supabase
+export async function loadChatsByUserId(userId: string): Promise<Chat[]> {
+  const supabase = await createClient()
+
+  // Then get remaining chats
+  const { data, error } = await supabase
+    .from('chats')
+    .select('chat_id, user_uuid, messages, created_at')
+    .eq('user_uuid', userId)
+    .not('messages', 'eq', '[]') // Filter out empty message arrays
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error loading chats for user:', error)
+    throw error
+  }
+
+  return data as Chat[]
 }
