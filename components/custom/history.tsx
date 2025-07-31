@@ -60,10 +60,12 @@ export const History = ({ user }: { user: User | undefined }) => {
       success: () => {
         mutate((history: Array<Chat> | undefined) => {
           if (history) {
+            // only redirect if the deleted chat is the current one
+            if (deleteId === id) router.push('/')
+
             return history.filter(h => h.chat_id !== id)
           }
         })
-        router.push('/')
         return 'Chat deleted successfully'
       },
       error: 'Failed to delete chat'
