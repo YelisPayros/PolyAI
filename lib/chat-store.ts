@@ -116,41 +116,9 @@ export async function createChat(): Promise<string> {
 
   return id
 }
-// Listar todos los chats del usuario autenticado (solo chat_id)
-export async function listChats(): Promise<{ chat_id: string; messages_count: number }[]> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-    error: authError
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    console.error('Auth error:', authError)
-    throw new Error('User not authenticated')
-  }
-
-  const user_uuid = user.id
-
-  // Selecciona también los mensajes para contar
-  const { data, error } = await supabase
-    .from('chats')
-    .select('chat_id, messages')
-    .eq('user_uuid', user_uuid)
-
-  if (error) {
-    console.error('Error listing chats:', error)
-    throw error
-  }
-
-  // Devuelve el id y la cantidad de mensajes
-  return (data || []).map((chat: any) => ({
-    chat_id: chat.chat_id,
-    messages_count: Array.isArray(chat.messages) ? chat.messages.length : 0
-  }))
-}
 
 // Delete a chat from Supabase
-export async function  deleteChat(id: string): Promise<void> {
+export async function deleteChat(id: string): Promise<void> {
   const supabase = await createClient()
   const {
     data: { user },

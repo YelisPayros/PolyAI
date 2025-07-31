@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
-import SidebarClient from '@/components/SidebarClient'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -25,14 +24,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-   return (
+  return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
-          <div className="flex">
-            <SidebarClient />
-            <main className="flex-1 ml-64">{children}</main>
-          </div>
+          {children}
           <Toaster />
         </AuthProvider>
       </body>
