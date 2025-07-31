@@ -68,7 +68,7 @@ export default function SidebarClient({ initialChats = [] }: { initialChats?: Ch
         supabase.removeChannel(channel)
       }
     }
-  }, [supabase,chats])
+  }, [supabase])
 
   async function handleDelete(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -77,6 +77,7 @@ export default function SidebarClient({ initialChats = [] }: { initialChats?: Ch
     try {
       await deleteChatClient(id)
       setChats(chats.filter(chat => chat.chat_id !== id))
+      window.location.href = '/'
     } catch (error) {
       console.error('Error deleting chat:', error)
     }
