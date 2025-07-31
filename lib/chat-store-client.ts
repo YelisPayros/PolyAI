@@ -3,7 +3,7 @@
 import { createClient } from './supabase/client'
 import { generateId } from 'ai'
 
-export async function listChatsClient(): Promise<{ chat_id: string; messages_count: number; created_at: string }[]> {
+export async function listChatsClient(): Promise<{ chat_id: string; messages_count: number }[]> {
   console.log('listChatsClient called:', new Date().toISOString())
   const supabase = createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -12,12 +12,11 @@ export async function listChatsClient(): Promise<{ chat_id: string; messages_cou
     return []
   }
   const user_uuid = user.id
-  console.log('User UUID in listChatsClient:', user_uuid)
   const { data, error } = await supabase
     .from('chats')
-    .select('chat_id, messages, created_at')
+    .select('chat_id, messages')
     .eq('user_uuid', user_uuid)
-    .order('created_at', { ascending: false }) // Ordenar por created_at descendente
+    .order('chat_id', { ascending: false }) // Order by chat_id to get latest first
   if (error) {
     console.error('Error listing chats:', error)
     return []
@@ -25,7 +24,6 @@ export async function listChatsClient(): Promise<{ chat_id: string; messages_cou
   return (data || []).map((chat: any) => ({
     chat_id: chat.chat_id,
     messages_count: Array.isArray(chat.messages) ? chat.messages.length : 0,
-    created_at: chat.created_at || new Date().toISOString() // Fallback por si created_at es null
   }))
 }
 
@@ -48,6 +46,7 @@ export async function deleteChatClient(id: string): Promise<void> {
   }
 }
 
+//create new chat
 export async function createChatClient(): Promise<string> {
   const supabase = createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -57,17 +56,19 @@ export async function createChatClient(): Promise<string> {
   }
   const user_uuid = user.id
 
+  // Check if there are previous chats
   const { data: chats, error: listError } = await supabase
     .from('chats')
-    .select('messages, created_at')
+    .select('messages')
     .eq('user_uuid', user_uuid)
-    .order('created_at', { ascending: false })
+    .order('chat_id', { ascending: false })
     .limit(1)
   if (listError) {
     console.error('Error checking last chat:', listError)
     throw listError
   }
 
+  // If there are no chats or the last one has messages, allow creation
   if (chats && chats.length > 0 && (!chats[0].messages || chats[0].messages.length === 0)) {
     throw new Error('Cannot create a new chat: the last chat is empty')
   }
@@ -75,7 +76,7 @@ export async function createChatClient(): Promise<string> {
   const id = generateId()
   const { error: insertError } = await supabase
     .from('chats')
-    .insert({ chat_id: id, user_uuid, messages: [], created_at: new Date().toISOString() })
+    .insert({ chat_id: id, user_uuid, messages: [] })
   if (insertError) {
     console.error('Error inserting new chat:', insertError)
     throw insertError
