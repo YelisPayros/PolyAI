@@ -109,7 +109,7 @@ export const History = ({ user }: { user: User | undefined }) => {
               </Button>
             )}
 
-            <div className="flex flex-col h-[calc(100dvh-124px)]">
+            <div className="flex flex-col gap-1 h-[calc(100dvh-124px)]">
               {!user ? (
                 <div className="text-zinc-10 h-dvh w-full flex flex-row justify-center items-center text-sm gap-2">
                   <InfoIcon />
