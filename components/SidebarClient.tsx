@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { listChatsClient, deleteChatClient, createChatClient } from '@/lib/chat-store-client'
 
@@ -21,7 +21,6 @@ export default function SidebarClient({ initialChats = [] }: SidebarClientProps)
   const [canCreateChat, setCanCreateChat] = useState(true)
   const supabase = createClient()
   const router = useRouter()
-  const pathname = usePathname()
 
   async function fetchChats() {
     try {
@@ -149,18 +148,6 @@ export default function SidebarClient({ initialChats = [] }: SidebarClientProps)
                     console.log('Chat deleted successfully:', id)
                     console.log('Manually fetching chats after delete')
                     await fetchChats()
-                    // Redirigir si el chat eliminado es el activo
-                    const currentChatId = pathname.split('/')[1]
-                    if (currentChatId === id) {
-                      const nextChat = chats.filter(c => c.chat_id !== id)[0]
-                      if (nextChat) {
-                        console.log('Redirecting to next chat:', nextChat.chat_id)
-                        router.push(`/${nextChat.chat_id}`)
-                      } else {
-                        console.log('No chats left, redirecting to /')
-                        router.push('/')
-                      }
-                    }
                   } catch (error) {
                     console.error('Error deleting chat:', JSON.stringify(error, null, 2))
                   }
