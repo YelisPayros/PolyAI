@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { listChatsClient, deleteChatClient, createChatClient } from '@/lib/chat-store-client'
 
@@ -15,74 +14,61 @@ export default function SidebarClient({ initialChats = [] }: { initialChats?: Ch
   const [chats, setChats] = useState<Chat[]>(initialChats)
   const [canCreateChat, setCanCreateChat] = useState(true)
   const supabase = createClient()
-  const router = useRouter()
-
-  async function fetchChats() {
-    try {
-      console.log('Fetching chats in SidebarClient:', new Date().toISOString())
-      const data = await listChatsClient()
-
-      // Ordenar los chats por ID descendente (los nuevos arriba)
-      const sortedChats = [...data].sort((a, b) => b.chat_id.localeCompare(a.chat_id))
-
-      setChats(sortedChats)
-
-      const hasEmptyChat = data.some(chat => chat.messages_count === 0)
-      setCanCreateChat(!hasEmptyChat)
-    } catch (error) {
-      console.error('Error fetching chats:', JSON.stringify(error, null, 2))
-    }
-  }
 
   useEffect(() => {
     let active = true
     let channel: any = null
 
+    async function fetchChats() {
+      try {
+        console.log('Fetching chats in SidebarClient:', new Date().toISOString())
+        const data = await listChatsClient()
+        if (active) {
+          setChats(data)
+          // Check if the latest chat is empty
+          const latestChat = data.sort((a, b) => b.chat_id.localeCompare(a.chat_id))[0]
+          setCanCreateChat(!latestChat || latestChat.messages_count > 0)
+        }
+      } catch (error) {
+        console.error('Error fetching chats:', error)
+      }
+    }
     fetchChats()
 
-    const setupSubscription = (user_uuid: string) => {
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      if (error || !user) {
+        console.error('User not authenticated:', error)
+        return
+      }
+
       channel = supabase
         .channel('chats-channel')
-        .on('postgres_changes', {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'chats',
-          filter: `user_uuid=eq.${user_uuid}`
-        }, (payload) => {
-          if (active) fetchChats()
-        })
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chats',
-          filter: `user_uuid=eq.${user_uuid}`
-        }, (payload) => {
-          if (active) fetchChats()
-        })
-        .on('postgres_changes', {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'chats'
-        }, (payload) => {
-          if (active) fetchChats()
-        })
-        .subscribe((status: string, err: any) => {
-          if (err) {
-            console.error('Subscription error:', JSON.stringify(err, null, 2))
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'chats',
+            filter: `user_uuid=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('Supabase subscription triggered:', payload, new Date().toISOString())
+            if (active) fetchChats()
           }
+        )
+        .subscribe((status: string, err: any) => {
+          if (err) console.error('Subscription error:', err)
+          console.log('Subscription status:', status)
         })
-    }
-
-    supabase.auth.getUser().then(({ data: { user }, error }) => {
-      if (error || !user) return
-      setupSubscription(user.id)
     })
 
     return () => {
       active = false
-      if (channel) supabase.removeChannel(channel)
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
     }
-  }, [supabase])
+  }, [supabase,chats])
 
   async function handleDelete(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -90,19 +76,18 @@ export default function SidebarClient({ initialChats = [] }: { initialChats?: Ch
     const id = formData.get('chat_id') as string
     try {
       await deleteChatClient(id)
-      await fetchChats()
+      setChats(chats.filter(chat => chat.chat_id !== id))
     } catch (error) {
-      console.error('Error deleting chat:', JSON.stringify(error, null, 2))
+      console.error('Error deleting chat:', error)
     }
   }
 
   async function handleCreateChat() {
     try {
       const id = await createChatClient()
-      await fetchChats()
-      router.push(`/${id}`)
+      window.location.href = `/${id}`
     } catch (error) {
-      console.error('Error creating chat:', JSON.stringify(error, null, 2))
+      console.error('Error creating chat:', error)
     }
   }
 
