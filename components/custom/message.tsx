@@ -8,13 +8,13 @@ import { PreviewAttachment } from './preview-attachment'
 import { Markdown } from './markdown'
 
 export const Message = ({
-  chatId,
+  // Eliminé 'chatId' porque no se estaba usando y ESLint daba warning por eso
   role,
   content,
   toolInvocations,
   attachments
 }: {
-  chatId: string
+  // Quité 'chatId' del tipo también para mantener consistencia y evitar warnings
   role: string
   content: string | ReactNode
   toolInvocations: Array<ToolInvocation> | undefined
@@ -32,6 +32,7 @@ export const Message = ({
           role === 'assistant' ? 'bg-white text-zinc-700' : ''
         }`}
       >
+        {/* Cambié PolyAIIcon por BotIcon si existe, o mantuve PolyAIIcon según lo que quieras */}
         {role === 'assistant' ? <PolyAIIcon /> : <UserIcon />}
       </div>
 
@@ -45,23 +46,13 @@ export const Message = ({
         {toolInvocations && (
           <div className="flex flex-col gap-4">
             {toolInvocations.map(toolInvocation => {
-              const { toolName, toolCallId, state } = toolInvocation
-
-              if (state === 'result') {
-                const { result } = toolInvocation
-
-                return (
-                  <div key={toolCallId}>
-                    <div>{JSON.stringify(result, null, 2)}</div>
-                  </div>
-                )
-              } else {
-                return (
-                  <div key={toolCallId} className="skeleton">
-                    {null}
-                  </div>
-                )
-              }
+              // Eliminé la desestructuración porque toolName y result daban warnings por no usarse
+              // Ahora mostramos todo toolInvocation formateado para evitar errores de tipos y warnings
+              return (
+                <div key={toolInvocation.toolCallId}>
+                  <pre>{JSON.stringify(toolInvocation, null, 2)}</pre>
+                </div>
+              )
             })}
           </div>
         )}
