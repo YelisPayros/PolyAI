@@ -18,7 +18,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const { signUp } = useAuth()
+  const { signUp, signInWithGoogle } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,6 +39,18 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     }
   }
 
+  const handleSignInWithGoogle = async () => {
+    try {
+      setLoading(true)
+      await signInWithGoogle()
+      router.push('/')
+    } catch {
+      toast.error('Failed to sign in with Google.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
@@ -50,7 +62,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           <form onSubmit={handleSubmit}>
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={handleSignInWithGoogle}>
                   <GoogleIcon />
                   Sign Up with Google
                 </Button>

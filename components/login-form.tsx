@@ -16,7 +16,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const { signIn } = useAuth()
+  const { signIn, signInWithGoogle } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,6 +27,18 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       toast.success('Logged in successfully!')
     } catch {
       toast.error('Failed to log in. Please check your credentials.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSignInWithGoogle = async () => {
+    try {
+      setLoading(true)
+      await signInWithGoogle()
+      router.push('/')
+    } catch {
+      toast.error('Failed to sign in with Google.')
     } finally {
       setLoading(false)
     }
@@ -75,7 +87,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             Or continue with
           </span>
         </div>
-        <Button variant="outline" className="w-full">
+        <Button variant="outline" className="w-full" onClick={handleSignInWithGoogle}>
           <GoogleIcon />
           Login with Google
         </Button>
