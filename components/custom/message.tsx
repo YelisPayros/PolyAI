@@ -9,13 +9,13 @@ import { Markdown } from './markdown'
 import { AudioPlayer } from './audio-player'
 
 export const Message = ({
-  chatId,
+  // Eliminé 'chatId' porque no se estaba usando y ESLint daba warning por eso
   role,
   content,
   toolInvocations,
   attachments
 }: {
-  chatId: string
+  // Quité 'chatId' del tipo también para mantener consistencia y evitar warnings
   role: string
   content: string | ReactNode
   toolInvocations: Array<ToolInvocation> | undefined
@@ -33,6 +33,7 @@ export const Message = ({
           role === 'assistant' ? 'bg-white text-zinc-700' : ''
         }`}
       >
+        {/* Cambié PolyAIIcon por BotIcon si existe, o mantuve PolyAIIcon según lo que quieras */}
         {role === 'assistant' ? <PolyAIIcon /> : <UserIcon />}
       </div>
 
@@ -59,7 +60,7 @@ export const Message = ({
                   } else if (result?.content?.[0]?.text) {
                     audioUrl = result.content[0].text.trim()
                   }
-                  
+
                   return (
                     <div key={toolCallId}>
                       <AudioPlayer audioUrl={audioUrl} />
