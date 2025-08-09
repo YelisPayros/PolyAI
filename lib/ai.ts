@@ -7,7 +7,7 @@ const google = createGoogleGenerativeAI({
   // custom settings
 })
 
-export const groqWrapper = wrapLanguageModel({
+export const geminiWrapper = wrapLanguageModel({
   model: google('gemini-2.5-flash'),
   middleware: customMiddleware
 })

@@ -26,16 +26,16 @@ type Suggestion = {
 }
 
 const suggestedActions: Suggestion[] = [
-  // {
-  //   title: 'Help me book a flight',
-  //   label: 'from San Francisco to London',
-  //   action: 'Help me book a flight from San Francisco to London'
-  // },
-  // {
-  //   title: 'What is the status',
-  //   label: 'of flight BA142 flying tmrw?',
-  //   action: 'What is the status of flight BA142 flying tmrw?'
-  // }
+  {
+    title: 'Can you send me',
+    label: 'an audio of a short story?',
+    action: 'Can you send me an audio of a short story?'
+  },
+  {
+    title: 'How can I pronounce',
+    label: 'the word "hello" in mandarin?',
+    action: 'How can I pronounce the word "hello" in mandarin?'
+  }
 ]
 
 export function MultimodalInput({
@@ -177,7 +177,7 @@ export function MultimodalInput({
                     content: suggestedAction.action
                   })
                 }}
-                className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
+                className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col cursor-pointer"
               >
                 <span className="font-medium">{suggestedAction.title}</span>
                 <span className="text-zinc-500 dark:text-zinc-400">{suggestedAction.label}</span>

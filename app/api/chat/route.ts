@@ -5,11 +5,21 @@ import {
   createIdGenerator,
   appendClientMessage
 } from 'ai'
-import { groqWrapper } from '@/lib/ai'
+import { geminiWrapper } from '@/lib/ai'
+import { experimental_createMCPClient as createMCPClient } from 'ai'
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { loadChat, saveChat } from '@/lib/chat-store'
 
 export async function POST(request: Request) {
   const { message, id } = await request.json()
+
+  const url = new URL('https://elevenlabs-mcp-i4sr.onrender.com/mcp')
+
+  const mcpClient = await createMCPClient({
+    transport: new StreamableHTTPClientTransport(url)
+  })
+
+  const tools = await mcpClient.tools()
 
   const previousMessages = await loadChat(id)
   const messages = appendClientMessage({
@@ -19,7 +29,7 @@ export async function POST(request: Request) {
   const coreMessages = convertToCoreMessages(messages).filter(message => message.content.length > 0)
 
   const result = await streamText({
-    model: groqWrapper,
+    model: geminiWrapper,
     system: `\n
         - Your Name is PolyAI!
         - You are a helpful AI assistant. You aim to be helpful and knowledgeable.
@@ -32,12 +42,16 @@ export async function POST(request: Request) {
         - If you receive unclear input or random text (e.g., "asdfgh"), respond politely asking for clarification instead of making assumptions or calling tools.
         - Refuse any requests for harmful content, generation of malicious code, or private information. Explain why such requests cannot be fulfilled.
         - Try to be as concise as possible in your responses.
+        - Only use the 'use_tts' tool when you are required to send an audio to the user. For these type of requests you don't need to ask a question for confirmation. DO NOT use more than 90 words for these audios. DO NOT include any other text in the response (like the URL for example).
+
 
         
         Sample appropriate responses:
           - For "hi": "Hello! How can I help you today?"
           - For "asdfgh": "I didn't quite understand that. Could you please rephrase or clarify what you're looking for?"
       `,
+    tools,
+    toolCallStreaming: true,
     onError({ error }) {
       console.error(error) // your error logging logic here
     },
@@ -54,6 +68,8 @@ export async function POST(request: Request) {
           responseMessages: response.messages
         })
       })
+
+      await mcpClient.close()
     }
   })
 

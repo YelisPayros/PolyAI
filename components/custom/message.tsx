@@ -6,6 +6,7 @@ import { ReactNode } from 'react'
 import { PolyAIIcon, UserIcon } from './icons'
 import { PreviewAttachment } from './preview-attachment'
 import { Markdown } from './markdown'
+import { AudioPlayer } from './audio-player'
 
 export const Message = ({
   chatId,
@@ -50,6 +51,22 @@ export const Message = ({
               if (state === 'result') {
                 const { result } = toolInvocation
 
+                if (toolName === 'use_tts') {
+                  // Extract the audio URL from the result
+                  let audioUrl = ''
+                  if (result?.structuredContent?.result) {
+                    audioUrl = result.structuredContent.result.trim()
+                  } else if (result?.content?.[0]?.text) {
+                    audioUrl = result.content[0].text.trim()
+                  }
+                  
+                  return (
+                    <div key={toolCallId}>
+                      <AudioPlayer audioUrl={audioUrl} />
+                    </div>
+                  )
+                }
+
                 return (
                   <div key={toolCallId}>
                     <div>{JSON.stringify(result, null, 2)}</div>
@@ -58,7 +75,7 @@ export const Message = ({
               } else {
                 return (
                   <div key={toolCallId} className="skeleton">
-                    {null}
+                    <AudioPlayer isLoading={true} />
                   </div>
                 )
               }
