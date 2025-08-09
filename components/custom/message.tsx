@@ -7,6 +7,9 @@ import { PolyAIIcon, UserIcon } from './icons'
 import { PreviewAttachment } from './preview-attachment'
 import { Markdown } from './markdown'
 import { AudioPlayer } from './audio-player'
+import { Badge } from '../ui/badge'
+import Link from 'next/link'
+import { ExternalLink } from 'lucide-react'
 
 export const Message = ({
   // Eliminé 'chatId' porque no se estaba usando y ESLint daba warning por eso
@@ -68,15 +71,55 @@ export const Message = ({
                   )
                 }
 
+                if (toolName === 'internet_search') {
+                  // Define background colors for badges
+                  const bgColors = ['bg-blue-500 dark:bg-blue-600', 'bg-gray-500 dark:bg-gray-600']
+
+                  return (
+                    <div key={toolCallId} className="flex flex-wrap gap-2">
+                      {result?.structuredContent?.results?.map(
+                        (item: { url: string; title: string }, index: number) => (
+                          <Link
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            key={index}
+                          >
+                            <Badge
+                              variant="secondary"
+                              className={`${
+                                bgColors[index % bgColors.length]
+                              } text-white hover:underline`}
+                            >
+                              <ExternalLink className="mr-1 shrink-0" size={14} />
+                              <span className="truncate">{item.title}</span>
+                            </Badge>
+                          </Link>
+                        )
+                      )}
+                    </div>
+                  )
+                }
+
                 return (
                   <div key={toolCallId}>
                     <div>{JSON.stringify(result, null, 2)}</div>
                   </div>
                 )
-              } else {
+              } else if (toolName === 'use_tts') {
                 return (
                   <div key={toolCallId} className="skeleton">
                     <AudioPlayer isLoading={true} />
+                  </div>
+                )
+              } else if (toolName === 'internet_search' && state === 'call') {
+                return (
+                  <div key={toolCallId} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-[14px] w-[14px] shrink-0 animate-pulse rounded-full bg-muted" />
+                      <span className="text-sm">Searching the web...</span>
+                    </div>
+                    <div className="h-[42px] w-full animate-pulse rounded-lg bg-muted" />
                   </div>
                 )
               }

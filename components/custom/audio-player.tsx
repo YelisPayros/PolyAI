@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PauseIcon, PlayIcon } from './icons'
 
@@ -74,7 +74,7 @@ export const AudioPlayer = ({ audioUrl, isLoading }: AudioPlayerProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center gap-1 p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg max-w-max">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-900 dark:border-zinc-100"></div>
+        <LoaderCircle className="animate-spin h-4 w-4" />
         <span className="text-sm text-zinc-600 dark:text-zinc-400">Generating audio...</span>
       </div>
     )

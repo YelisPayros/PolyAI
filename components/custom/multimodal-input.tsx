@@ -32,9 +32,9 @@ const suggestedActions: Suggestion[] = [
     action: 'Can you send me an audio of a short story?'
   },
   {
-    title: 'How can I pronounce',
-    label: 'the word "hello" in mandarin?',
-    action: 'How can I pronounce the word "hello" in mandarin?'
+    title: 'Can you investigate',
+    label: 'what is an LLM?',
+    action: 'Can you investigate what is an LLM?'
   }
 ]
 

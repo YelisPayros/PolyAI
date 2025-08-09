@@ -17,7 +17,7 @@ Look at the DeepWiki [here](https://deepwiki.com/YelisPayros/PolyAI).
 - **Frontend**: Next.js, React, TypeScript
 - **Styling**: Tailwind CSS, shadcn/ui components
 - **Authentication**: Supabase Auth
-- **AI Integration**: Vercel AI SDK, GROQ API (Llama 3.3 70B model)
+- **AI Integration**: Vercel AI SDK, Gemini, MCP servers (Internet search, TTS)
 - **State Management**: React Context API
 
 ## 🚀 Getting Started
