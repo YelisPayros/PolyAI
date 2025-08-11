@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { Attachment, ToolInvocation } from 'ai'
@@ -10,6 +11,8 @@ import { AudioPlayer } from './audio-player'
 import { Badge } from '../ui/badge'
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
+import Map, { Marker } from 'react-map-gl/maplibre'
+import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip'
 
 export const Message = ({
   // Eliminé 'chatId' porque no se estaba usando y ESLint daba warning por eso
@@ -54,6 +57,14 @@ export const Message = ({
 
               if (state === 'result') {
                 const { result } = toolInvocation
+
+                if (toolName === 'get_ip_info') {
+                  return (
+                    <div key={toolCallId} className="hidden">
+                      {null}
+                    </div>
+                  )
+                }
 
                 if (toolName === 'use_tts') {
                   // Extract the audio URL from the result
@@ -101,6 +112,137 @@ export const Message = ({
                   )
                 }
 
+                if (toolName === 'handle_place_search') {
+                  // Build GeoJSON from tool result places
+                  let places: Array<{
+                    name: string
+                    lat: number
+                    lon: number
+                    address?: string | null
+                  }> = []
+
+                  // Try to extract from structured content first
+                  const structured = (result as any)?.structuredContent
+                  if (Array.isArray(structured?.places)) {
+                    places = structured.places
+                  } else {
+                    // Fallback to content[0].text that might be a JSON string array
+                    const textPayload = (result as any)?.content?.[0]?.text
+                    if (typeof textPayload === 'string') {
+                      try {
+                        const parsed = JSON.parse(textPayload)
+                        if (Array.isArray(parsed)) {
+                          places = parsed
+                        }
+                      } catch {}
+                    }
+                  }
+
+                  if (!places.length) return null
+                  // Construct GeoJSON FeatureCollection
+                  const features = places
+                    .filter(p => typeof p?.lat === 'number' && typeof p?.lon === 'number')
+                    .map(p => ({
+                      type: 'Feature',
+                      geometry: {
+                        type: 'Point',
+                        coordinates: [Number(p.lon), Number(p.lat)]
+                      },
+                      properties: {
+                        title: p.name,
+                        address: p.address ?? null
+                      }
+                    })) as any[]
+                  const geojson: any = {
+                    type: 'FeatureCollection',
+                    features: features ?? []
+                  }
+
+                  // Choose a reasonable initial center
+                  const lons = (geojson.features as any[])
+                    .map(f => (f.geometry as any)?.coordinates?.[0])
+                    .filter((v: any) => typeof v === 'number')
+                  const lats = (geojson.features as any[])
+                    .map(f => (f.geometry as any)?.coordinates?.[1])
+                    .filter((v: any) => typeof v === 'number')
+                  const avgLon = lons.length
+                    ? lons.reduce((a: number, b: number) => a + b, 0) / lons.length
+                    : -122.45
+                  const avgLat = lats.length
+                    ? lats.reduce((a: number, b: number) => a + b, 0) / lats.length
+                    : 37.78
+
+                  // Compute bounds to show all points when multiple
+                  const coords: Array<[number, number]> = (geojson.features as any[])
+                    .map(f => (f.geometry as any)?.coordinates)
+                    .filter(
+                      (c: any) =>
+                        Array.isArray(c) &&
+                        c.length === 2 &&
+                        c.every((v: any) => typeof v === 'number')
+                    )
+                  const minLon = coords.length ? Math.min(...coords.map(c => c[0])) : avgLon
+                  const maxLon = coords.length ? Math.max(...coords.map(c => c[0])) : avgLon
+                  const minLat = coords.length ? Math.min(...coords.map(c => c[1])) : avgLat
+                  const maxLat = coords.length ? Math.max(...coords.map(c => c[1])) : avgLat
+
+                  const initialViewState: any =
+                    coords.length > 1
+                      ? {
+                          bounds: [
+                            [minLon, minLat],
+                            [maxLon, maxLat]
+                          ],
+                          fitBoundsOptions: { padding: 40 }
+                        }
+                      : { longitude: avgLon, latitude: avgLat, zoom: 14 }
+
+                  // Render markers wrapped with Tooltip for title display
+                  const PlacesMap = () => {
+                    return (
+                      <Map
+                        reuseMaps
+                        initialViewState={initialViewState}
+                        mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+                        style={{ width: '100%', height: 320 }}
+                      >
+                        {places.map((p, idx) =>
+                          typeof p.lat === 'number' && typeof p.lon === 'number' ? (
+                            <Marker
+                              key={idx}
+                              longitude={Number(p.lon)}
+                              latitude={Number(p.lat)}
+                              anchor="center"
+                            >
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    aria-label={p.name}
+                                    className="cursor-pointer block size-3 rounded-full bg-sky-600 ring-2 ring-white shadow hover:scale-110 transition"
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent sideOffset={6}>
+                                  <div className="text-xs font-medium">{p.name}</div>
+                                  {p.address ? (
+                                    <div className="text-xs text-muted-foreground">{p.address}</div>
+                                  ) : null}
+                                </TooltipContent>
+                              </Tooltip>
+                            </Marker>
+                          ) : null
+                        )}
+                      </Map>
+                    )
+                  }
+
+                  return (
+                    <div key={toolCallId} className="overflow-hidden rounded-lg border">
+                      <PlacesMap />
+                    </div>
+                  )
+                }
+
                 return (
                   <div key={toolCallId}>
                     <div>{JSON.stringify(result, null, 2)}</div>
@@ -120,6 +262,16 @@ export const Message = ({
                       <span className="text-sm">Searching the web...</span>
                     </div>
                     <div className="h-[42px] w-full animate-pulse rounded-lg bg-muted" />
+                  </div>
+                )
+              } else if (toolName === 'handle_place_search' && state === 'call') {
+                return (
+                  <div key={toolCallId} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-[14px] w-[14px] shrink-0 animate-pulse rounded-full bg-muted" />
+                      <span className="text-sm">Searching places...</span>
+                    </div>
+                    <div className="h-[160px] w-full animate-pulse rounded-lg bg-muted" />
                   </div>
                 )
               }

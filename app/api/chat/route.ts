@@ -15,6 +15,11 @@ export async function POST(request: Request) {
 
   const url = new URL(process.env.MCP_SERVER_URL || '')
 
+  // Get IP address using external API
+  const ipResponse = await fetch('https://api.ipify.org?format=json')
+  const ipData = await ipResponse.json()
+  const ip = ipData.ip
+
   const mcpClient = await createMCPClient({
     transport: new StreamableHTTPClientTransport(url)
   })
@@ -37,6 +42,7 @@ export async function POST(request: Request) {
         - DO NOT output lists.
         - after every tool call, pretend you're showing the result to the user and keep your response limited to a phrase.
         - today's date is ${new Date().toLocaleDateString()}.
+        - the user's IP address is ${ip}.
         - ask follow up questions to nudge user into the optimal flow.
         - ask for any details you don't know, etc.
         - If you receive unclear input or random text (e.g., "asdfgh"), respond politely asking for clarification instead of making assumptions or calling tools.
@@ -44,6 +50,9 @@ export async function POST(request: Request) {
         - Try to be as concise as possible in your responses.
         - Only use the 'use_tts' tool when you are required to send an audio to the user. For these type of requests you don't need to ask a question for confirmation. DO NOT use more than 90 words for these audios. DO NOT include any other text in the response (like the URL for example).
         - For the 'internet_search' tool you DO NOT need to provide all URLS that you find. You can provide the ones you find necessary only, if that is one, then you can send just one, if its two, then send those two. DO NOT send more then three URLS or search results.
+        - DO NOT ever ask the user for its location, you know the ip, you can just use the 'get_ip_info' tool to get the location from the ip.
+        - When using the 'handle_place_search' you can determine the mode based on what the user is asking for, and place either 'search_nearby' or 'search_landmark'. The same goes with the limit, depending on how many locations you think the user needs you can alter this number.
+
 
         
         Sample appropriate responses:
