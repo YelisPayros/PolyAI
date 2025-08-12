@@ -24,7 +24,9 @@ const validateFile = (file: File) => {
 
 export async function POST(request: Request) {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const {
+    data: { session }
+  } = await supabase.auth.getSession()
 
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -55,7 +57,8 @@ export async function POST(request: Request) {
 
     try {
       const data = await put(`${filename}`, fileBuffer, {
-        access: 'public'
+        access: 'public',
+        addRandomSuffix: true
       })
 
       return NextResponse.json(data)
